@@ -6,4 +6,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif /* DEOSOCL */
+#endif /*DEOSOCL*/
