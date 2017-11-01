@@ -1,7 +1,9 @@
 #include "atdlib.h"
 
 int main(int argc, char const *argv[])
-{   deostxquine();   printf("\n");
-    deosutilquine(); printf("\n");
+{   deostx *tx;
+    tx = newdeostx();
+    printf("%d\n", tx->i);
+    deldeostx(tx);
     return EXIT_SUCCESS;
 }

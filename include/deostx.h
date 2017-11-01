@@ -11,11 +11,13 @@ extern "C" {
 #include <string.h>
 #endif /*ATDLIB*/
 
-typedef struct deosTxObject
-{   int id;
-} deosTx;
+typedef struct deostxi
+{   int i;
+} deostx;
 
-extern void deostxquine(void);
+extern deostx *newdeostx(void);
+extern deostx *initdeostx(void);
+extern int deldeostx(deostx *self);
 
 #ifdef __cplusplus
 }
