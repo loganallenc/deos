@@ -1,4 +1,4 @@
-#include "crypto/sha512.h"
+#include "crypto/sha.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

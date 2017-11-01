@@ -9,8 +9,7 @@ extern "C" {
 #include <stdio.h>
 
 #include "crypto/aes.h"
-#include "crypto/sha256.h"
-#include "crypto/sha512.h"
+#include "crypto/sha.h"
 
 #include "bitcoin/addr.h"
 #include "bitcoin/script.h"
