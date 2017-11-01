@@ -5,5 +5,6 @@ int main(int argc, char const *argv[])
     tx = newdeostx();
     printf("%d\n", tx->i);
     deldeostx(tx);
+    AES128_init();
     return EXIT_SUCCESS;
 }
