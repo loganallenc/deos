@@ -15,6 +15,8 @@ typedef struct deosTxObject
 {   int id;
 } deosTx;
 
+extern void deostxquine(void);
+
 #ifdef __cplusplus
 }
 #endif

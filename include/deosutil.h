@@ -15,6 +15,8 @@ typedef struct deosUtilObject
 {   int id;
 } deosUtil;
 
+extern void deosutilquine(void);
+
 #ifdef __cplusplus
 }
 #endif

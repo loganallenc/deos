@@ -25,7 +25,7 @@ run: build
 	$(XMOD) $(TARGET) && $(TARGET)
 
 build: $(OBJECTS)
-	$(CC) $(STD) $(CFLAGS) $(LIBS) $(HEADERS) $(MAIN) -o $(TARGET)
+	$(CC) $(STD) $(CFLAGS) $(LIBS) $(HEADERS) $(MAIN) $(OBJECTS) -o $(TARGET)
 
 clean:
 	$(RM) $(TARGET) $(OBJECTS)
