@@ -9,7 +9,7 @@ CLIBS=-lpcre -lcrypto -lm -lpthread
 HEADERS:=-I./include
 MAIN:=main.c
 OBJECTS:=\
-obj/crypto/sha.o\
+obj/crypto/aes.o\
 obj/deosaddr.o\
 obj/deosocl.o\
 obj/deostx.o\
