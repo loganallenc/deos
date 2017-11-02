@@ -40,7 +40,7 @@ typedef struct
     int keysize;
     int nkeywords;
     int nrounds;
-    uint8_t* key;
+    const uint8_t* key;
 } deosaes;
 
 typedef struct

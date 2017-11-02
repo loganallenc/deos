@@ -15,24 +15,32 @@ static deosaes *__initdeosaes(int keysize, const uint8_t* key);
 static void _loadbyte(aesstate* s, unsigned char byte, int r, int c);
 static void _getonecolumn(aesstate* s, const aesstate* a, int c);
 static void _subbytes(aesstate *s, int inv);
+static void _keysetuptransform(aesstate* s, const aesstate* r);
+static void _multx(aesstate* s);
+static void _keysetupcolumnmix(aesstate* s, aesstate* r, const aesstate* a, int c1, int c2);
 static void _loadbytes(aesstate *s, const unsigned char* data16);
 
 deosaes *newdeosaes(int keysize, const uint8_t* key)
 {
     deosaes *self = __initdeosaes(keysize, key);
+
+    aesstate column;
+    aesstate rcon = {{1,0,0,0,0,0,0,0}};
+
+    int i;
+    int pos = 0;
+
     if (self->keysize == 128)
-    {   int i;
-        aesstate rcon = {{1,0,0,0,0,0,0,0}};
-        int pos = 0;
-        aesstate column;
-        for (i=0; i<self->nrounds+1; i++)
+    {   for (i=0; i<self->nrounds+1; i++)
         {   int b;
             for (b=0; b<8; b++) self->rounds[i].slice[b]=0;
         }
         for (i = 0; i < self->nkeywords; i++)
         {   int r;
-            for (r = 0; r < 4; r++)
-                _loadbyte(&self->rounds[i >> 2], *(key++), r, i & 3);
+            for (r = 0; r < 4; r++) _loadbyte(&self->rounds[i >> 2],
+                                              *(key++),
+                                              r,
+                                              i & 3);
         }
         _getonecolumn(&column,
                       &self->rounds[(self->nkeywords - 1) >> 2],
@@ -40,13 +48,15 @@ deosaes *newdeosaes(int keysize, const uint8_t* key)
         for (i=self->nkeywords; i<4*(self->nrounds+1); i++)
         {   if (pos == 0)
             {   _subbytes(&column, 0);
-                /*KeySetupTransform(&column, &rcon);
-                MultX(&rcon); */
-            } else if (self->nkeywords>6 && pos==4) _subbytes(&column, 0);
-
+                _keysetuptransform(&column, &rcon);
+                _multx(&rcon);
+            } else if (self->nkeywords>6 && pos==4)
+                _subbytes(&column, 0);
             if (++pos==self->nkeywords) pos=0;
-            /*KeySetupColumnMix(&column, &rounds[i >> 2], &rounds[(i - nkeywords) >> 2], i & 3, (i - nkeywords) & 3);
-            */
+            _keysetupcolumnmix(&column,
+                               &self->rounds[i >> 2],
+                               &self->rounds[(i - self->nkeywords) >> 2],
+                               i & 3, (i - self->nkeywords) & 3);
         }
     }
     return self;
@@ -179,6 +189,33 @@ static void _subbytes(aesstate *s, int inv)
         s->slice[1] = ~(L13 ^ L27);
         s->slice[0] = ~(L6 ^ L23);
     }
+}
+
+static void _keysetuptransform(aesstate* s, const aesstate* r)
+{
+    int b;
+    for (b = 0; b < 8; b++)
+        s->slice[b] = ((s->slice[b] >> 4) | (s->slice[b] << 12)) ^ r->slice[b];
+}
+
+static void _multx(aesstate* s)
+{
+    uint16_t top = s->slice[7];
+    s->slice[7] = s->slice[6];
+    s->slice[6] = s->slice[5];
+    s->slice[5] = s->slice[4];
+    s->slice[4] = s->slice[3] ^ top;
+    s->slice[3] = s->slice[2] ^ top;
+    s->slice[2] = s->slice[1];
+    s->slice[1] = s->slice[0] ^ top;
+    s->slice[0] = top;
+}
+
+static void _keysetupcolumnmix(aesstate* s, aesstate* r, const aesstate* a, int c1, int c2)
+{
+    int b;
+    for (b = 0; b < 8; b++)
+        r->slice[b] |= ((s->slice[b] ^= ((a->slice[b] >> c2) & 0x1111)) & 0x1111) << c1;
 }
 
 static void _loadbytes(aesstate *s, const unsigned char* data16)
