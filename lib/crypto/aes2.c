@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-static deosaes *__initdeosaes(int keysize, const uint8_t* key);
+/* local declarations */
 static void _loadbyte(aesstate* s, unsigned char byte, int r, int c);
 static void _getonecolumn(aesstate* s, const aesstate* a, int c);
 static void _subbytes(aesstate *s, int inv);
@@ -19,7 +19,9 @@ static void _keysetuptransform(aesstate* s, const aesstate* r);
 static void _multx(aesstate* s);
 static void _keysetupcolumnmix(aesstate* s, aesstate* r, const aesstate* a, int c1, int c2);
 static void _loadbytes(aesstate *s, const unsigned char* data16);
+static deosaes *__initdeosaes(int keysize, const uint8_t* key);
 
+/* public functions */
 deosaes *newdeosaes(int keysize, const uint8_t* key)
 {
     deosaes *self = __initdeosaes(keysize, key);
@@ -80,6 +82,14 @@ static deosaes *__initdeosaes(int keysize, const uint8_t* key)
     return self;
 }
 
+int deldeosaes(deosaes *self)
+{
+    if (NULL == self) return -1;
+    free(self);
+    return 0;
+}
+
+/* local functions */
 static void _loadbyte(aesstate* s, unsigned char byte, int r, int c)
 {
     int i;
@@ -150,44 +160,19 @@ static void _subbytes(aesstate *s, int inv)
         s->slice[4] = P12 ^ P22;  s->slice[3] = P23 ^ P27;  s->slice[2] = P19 ^ P24;
         s->slice[1] = P14 ^ P23;  s->slice[0] =  P9 ^ P16;
     } else {
-        uint16_t L0 = M61 ^ M62;
-        uint16_t L1 = M50 ^ M56;
-        uint16_t L2 = M46 ^ M48;
-        uint16_t L3 = M47 ^ M55;
-        uint16_t L4 = M54 ^ M58;
-        uint16_t L5 = M49 ^ M61;
-        uint16_t L6 = M62 ^ L5;
-        uint16_t L7 = M46 ^ L3;
-        uint16_t L8 = M51 ^ M59;
-        uint16_t L9 = M52 ^ M53;
-        uint16_t L10 = M53 ^ L4;
-        uint16_t L11 = M60 ^ L2;
-        uint16_t L12 = M48 ^ M51;
-        uint16_t L13 = M50 ^ L0;
-        uint16_t L14 = M52 ^ M61;
-        uint16_t L15 = M55 ^ L1;
-        uint16_t L16 = M56 ^ L0;
-        uint16_t L17 = M57 ^ L1;
-        uint16_t L18 = M58 ^ L8;
-        uint16_t L19 = M63 ^ L4;
-        uint16_t L20 = L0 ^ L1;
-        uint16_t L21 = L1 ^ L7;
-        uint16_t L22 = L3 ^ L12;
-        uint16_t L23 = L18 ^ L2;
-        uint16_t L24 = L15 ^ L9;
-        uint16_t L25 = L6 ^ L10;
-        uint16_t L26 = L7 ^ L9;
-        uint16_t L27 = L8 ^ L10;
-        uint16_t L28 = L11 ^ L14;
-        uint16_t L29 = L11 ^ L17;
-        s->slice[7] = L6 ^ L24;
-        s->slice[6] = ~(L16 ^ L26);
-        s->slice[5] = ~(L19 ^ L28);
-        s->slice[4] = L6 ^ L21;
-        s->slice[3] = L20 ^ L22;
-        s->slice[2] = L25 ^ L29;
-        s->slice[1] = ~(L13 ^ L27);
-        s->slice[0] = ~(L6 ^ L23);
+        uint16_t L0 = M61 ^ M62; uint16_t L1 = M50 ^ M56; uint16_t L2 = M46 ^ M48;
+        uint16_t L3 = M47 ^ M55; uint16_t L4 = M54 ^ M58; uint16_t L5 = M49 ^ M61;
+        uint16_t L6 = M62 ^ L5; uint16_t L7 = M46 ^ L3; uint16_t L8 = M51 ^ M59;
+        uint16_t L9 = M52 ^ M53; uint16_t L10 = M53 ^ L4; uint16_t L11 = M60 ^ L2;
+        uint16_t L12 = M48 ^ M51; uint16_t L13 = M50 ^ L0; uint16_t L14 = M52 ^ M61;
+        uint16_t L15 = M55 ^ L1; uint16_t L16 = M56 ^ L0; uint16_t L17 = M57 ^ L1;
+        uint16_t L18 = M58 ^ L8; uint16_t L19 = M63 ^ L4; uint16_t L20 = L0 ^ L1;
+        uint16_t L21 = L1 ^ L7; uint16_t L22 = L3 ^ L12; uint16_t L23 = L18 ^ L2;
+        uint16_t L24 = L15 ^ L9; uint16_t L25 = L6 ^ L10; uint16_t L26 = L7 ^ L9;
+        uint16_t L27 = L8 ^ L10; uint16_t L28 = L11 ^ L14; uint16_t L29 = L11 ^ L17;
+        s->slice[7] = L6 ^ L24; s->slice[6] = ~(L16 ^ L26); s->slice[5] = ~(L19 ^ L28);
+        s->slice[4] = L6 ^ L21; s->slice[3] = L20 ^ L22; s->slice[2] = L25 ^ L29;
+        s->slice[1] = ~(L13 ^ L27); s->slice[0] = ~(L6 ^ L23);
     }
 }
 
@@ -226,13 +211,6 @@ static void _loadbytes(aesstate *s, const unsigned char* data16)
         for (r = 0; r < 4; r++)
             _loadbyte(s, *(data16++), r, c);
     }
-}
-
-int deldeosaes(deosaes *self)
-{
-    if (NULL == self) return -1;
-    free(self);
-    return 0;
 }
 
 #ifdef __cplusplus
