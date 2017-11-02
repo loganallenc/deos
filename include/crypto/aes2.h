@@ -52,6 +52,8 @@ typedef struct
 
 extern deosaes *newdeosaes(int keysize, const uint8_t* key);
 extern int deldeosaes(deosaes *self);
+extern void deosaesencrypt(deosaes *self, size_t blocks, unsigned char *ciphertext, const unsigned char *plaintext);
+extern void deosaesdecrypt(deosaes *self, size_t blocks, unsigned char *plaintext, const unsigned char *ciphertext);
 
 #ifdef __cplusplus
 }

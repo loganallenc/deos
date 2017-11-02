@@ -29,14 +29,27 @@ int main(int argc, char const *argv[])
     {
         unsigned char key[32];
         testdeosaes* test = &aestests[i];
+
         switch (test->keysize)
         {   case 128: { _fromhex(key, 16, test->key); break; }
             case 192: { _fromhex(key, 24, test->key); break; }
             case 256: { _fromhex(key, 32, test->key); break; }
         }
+
+        unsigned char ciphertext[16]; _fromhex(ciphertext, 16, test->cipher);
+        unsigned char  plaintext[16]; _fromhex(plaintext,  16, test->plain);
+        unsigned char  ciphered[16], deciphered[16];
+
         deosaes *aes = newdeosaes(test->keysize, key);
-        printf("%s\n", test->key);
-        printf("%d\n", aes->keysize);
+        deosaesencrypt(aes, 1, ciphered,   plaintext);
+        deosaesdecrypt(aes, 1, deciphered, ciphertext);
+        if (aes->keysize == 128)
+        {
+            if (memcmp(plaintext, deciphered, 16))
+            {
+                fprintf(stderr, "D(key=\"%s\", cipher=\"%s\") != \"%s\"\n", test->key, test->cipher, test->plain);
+            }
+        }
         deldeosaes(aes);
     }
 

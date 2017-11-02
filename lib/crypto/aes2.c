@@ -7,11 +7,20 @@
 
 #include "crypto/aes2.h"
 
+/* macros */
+#define BIT_RANGE(from,to) (((1 << ((to) - (from))) - 1) << (from))
+#define BIT_RANGE_LEFT(x,from,to,shift) (((x) & BIT_RANGE((from), (to))) << (shift))
+#define BIT_RANGE_RIGHT(x,from,to,shift) (((x) & BIT_RANGE((from), (to))) >> (shift))
+#define ROT(x,b) (((x) >> ((b) * 4)) | ((x) << ((4-(b)) * 4)))
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* local declarations */
+static deosaes *_initdeosaes(int keysize, const uint8_t* key);
+static void _deosaesencrypt(const aesstate* rounds, int nrounds, unsigned char* ciphertext, const unsigned char* plaintext);
+static void _deosaesdecrypt(const aesstate* rounds, int nrounds, unsigned char* plaintext, const unsigned char* ciphertext);
 static void _loadbyte(aesstate* s, unsigned char byte, int r, int c);
 static void _getonecolumn(aesstate* s, const aesstate* a, int c);
 static void _subbytes(aesstate *s, int inv);
@@ -19,12 +28,16 @@ static void _keysetuptransform(aesstate* s, const aesstate* r);
 static void _multx(aesstate* s);
 static void _keysetupcolumnmix(aesstate* s, aesstate* r, const aesstate* a, int c1, int c2);
 static void _loadbytes(aesstate *s, const unsigned char* data16);
-static deosaes *__initdeosaes(int keysize, const uint8_t* key);
+static void _addroundkey(aesstate* s, const aesstate* round);
+static void _shiftrows(aesstate* s);
+static void _mixcolumns(aesstate* s, int inv);
+static void _savebytes(unsigned char* data16, const aesstate *s);
+static void _invshiftrows(aesstate* s);
 
-/* public functions */
+/* magic functions */
 deosaes *newdeosaes(int keysize, const uint8_t* key)
 {
-    deosaes *self = __initdeosaes(keysize, key);
+    deosaes *self = _initdeosaes(keysize, key);
 
     aesstate column;
     aesstate rcon = {{1,0,0,0,0,0,0,0}};
@@ -64,7 +77,42 @@ deosaes *newdeosaes(int keysize, const uint8_t* key)
     return self;
 }
 
-static deosaes *__initdeosaes(int keysize, const uint8_t* key)
+int deldeosaes(deosaes *self)
+{
+    if (NULL == self) return -1;
+    free(self);
+    return 0;
+}
+
+/* public operations */
+void deosaesencrypt(deosaes *self, size_t blocks, unsigned char *ciphertext, const unsigned char *plaintext)
+{
+    while (blocks--)
+    {
+        if (self->keysize == 128)
+        {
+            _deosaesencrypt(self->rounds, self->nrounds, ciphertext, plaintext);
+            ciphertext += 16;
+            plaintext += 16;
+        }
+    }
+}
+
+void deosaesdecrypt(deosaes *self, size_t blocks, unsigned char *plaintext, const unsigned char *ciphertext)
+{
+    while (blocks--)
+    {
+        if (self->keysize == 128)
+        {
+            _deosaesdecrypt(self->rounds, self->nrounds, plaintext, ciphertext);
+            ciphertext += 16;
+            plaintext += 16;
+        }
+    }
+}
+
+/* local functions */
+static deosaes *_initdeosaes(int keysize, const uint8_t* key)
 {
     deosaes *self = (deosaes *) malloc(sizeof(deosaes));
     if (self == NULL) return NULL;
@@ -82,14 +130,45 @@ static deosaes *__initdeosaes(int keysize, const uint8_t* key)
     return self;
 }
 
-int deldeosaes(deosaes *self)
+static void _deosaesencrypt(const aesstate* rounds, int nrounds, unsigned char* ciphertext, const unsigned char* plaintext)
 {
-    if (NULL == self) return -1;
-    free(self);
-    return 0;
+    aesstate s = {{0}};
+    int round;
+    _loadbytes(&s, plaintext);
+    _addroundkey(&s, rounds++);
+    for (round = 1; round < nrounds; round++)
+    {
+        _subbytes(&s, 0);
+        _shiftrows(&s);
+        _mixcolumns(&s, 0);
+        _addroundkey(&s, rounds++);
+    }
+    _subbytes(&s, 0);
+    _shiftrows(&s);
+    _addroundkey(&s, rounds);
+    _savebytes(ciphertext, &s);
 }
 
-/* local functions */
+static void _deosaesdecrypt(const aesstate* rounds, int nrounds, unsigned char* plaintext, const unsigned char* ciphertext)
+{
+    aesstate s = {{0}};
+    int round;
+    rounds += nrounds;
+    _loadbytes(&s, ciphertext);
+    _addroundkey(&s, rounds--);
+    for (round = 1; round < nrounds; round++)
+    {
+        _invshiftrows(&s);
+        _subbytes(&s, 1);
+        _addroundkey(&s, rounds--);
+        _mixcolumns(&s, 1);
+    }
+    _invshiftrows(&s);
+    _subbytes(&s, 1);
+    _addroundkey(&s, rounds);
+    _savebytes(plaintext, &s);
+}
+
 static void _loadbyte(aesstate* s, unsigned char byte, int r, int c)
 {
     int i;
@@ -210,6 +289,98 @@ static void _loadbytes(aesstate *s, const unsigned char* data16)
     {   int r;
         for (r = 0; r < 4; r++)
             _loadbyte(s, *(data16++), r, c);
+    }
+}
+
+static void _addroundkey(aesstate* s, const aesstate* round)
+{
+    int b;
+    for (b = 0; b < 8; b++) s->slice[b] ^= round->slice[b];
+}
+
+static void _shiftrows(aesstate* s)
+{
+    int i;
+    for (i = 0; i < 8; i++)
+    {   uint16_t v = s->slice[i];
+        s->slice[i] =
+            (v & BIT_RANGE(0, 4)) |
+            BIT_RANGE_LEFT(v, 4, 5, 3) | BIT_RANGE_RIGHT(v, 5, 8, 1) |
+            BIT_RANGE_LEFT(v, 8, 10, 2) | BIT_RANGE_RIGHT(v, 10, 12, 2) |
+            BIT_RANGE_LEFT(v, 12, 15, 1) | BIT_RANGE_RIGHT(v, 15, 16, 3);
+    }
+}
+
+static void _mixcolumns(aesstate* s, int inv)
+{
+    uint16_t s0 = s->slice[0], s1 = s->slice[1], s2 = s->slice[2], s3 = s->slice[3];
+    uint16_t s4 = s->slice[4], s5 = s->slice[5], s6 = s->slice[6], s7 = s->slice[7];
+    uint16_t s0_01 = s0 ^ ROT(s0, 1), s0_123 = ROT(s0_01, 1) ^ ROT(s0, 3);
+    uint16_t s1_01 = s1 ^ ROT(s1, 1), s1_123 = ROT(s1_01, 1) ^ ROT(s1, 3);
+    uint16_t s2_01 = s2 ^ ROT(s2, 1), s2_123 = ROT(s2_01, 1) ^ ROT(s2, 3);
+    uint16_t s3_01 = s3 ^ ROT(s3, 1), s3_123 = ROT(s3_01, 1) ^ ROT(s3, 3);
+    uint16_t s4_01 = s4 ^ ROT(s4, 1), s4_123 = ROT(s4_01, 1) ^ ROT(s4, 3);
+    uint16_t s5_01 = s5 ^ ROT(s5, 1), s5_123 = ROT(s5_01, 1) ^ ROT(s5, 3);
+    uint16_t s6_01 = s6 ^ ROT(s6, 1), s6_123 = ROT(s6_01, 1) ^ ROT(s6, 3);
+    uint16_t s7_01 = s7 ^ ROT(s7, 1), s7_123 = ROT(s7_01, 1) ^ ROT(s7, 3);
+    s->slice[0] = s7_01 ^ s0_123;
+    s->slice[1] = s7_01 ^ s0_01 ^ s1_123;
+    s->slice[2] = s1_01 ^ s2_123;
+    s->slice[3] = s7_01 ^ s2_01 ^ s3_123;
+    s->slice[4] = s7_01 ^ s3_01 ^ s4_123;
+    s->slice[5] = s4_01 ^ s5_123;
+    s->slice[6] = s5_01 ^ s6_123;
+    s->slice[7] = s6_01 ^ s7_123;
+    if (inv)
+    {   uint16_t t0_02 = s->slice[0] ^ ROT(s->slice[0], 2);
+        uint16_t t1_02 = s->slice[1] ^ ROT(s->slice[1], 2);
+        uint16_t t2_02 = s->slice[2] ^ ROT(s->slice[2], 2);
+        uint16_t t3_02 = s->slice[3] ^ ROT(s->slice[3], 2);
+        uint16_t t4_02 = s->slice[4] ^ ROT(s->slice[4], 2);
+        uint16_t t5_02 = s->slice[5] ^ ROT(s->slice[5], 2);
+        uint16_t t6_02 = s->slice[6] ^ ROT(s->slice[6], 2);
+        uint16_t t7_02 = s->slice[7] ^ ROT(s->slice[7], 2);
+        s->slice[0] ^= t6_02;
+        s->slice[1] ^= t6_02 ^ t7_02;
+        s->slice[2] ^= t0_02 ^ t7_02;
+        s->slice[3] ^= t1_02 ^ t6_02;
+        s->slice[4] ^= t2_02 ^ t6_02 ^ t7_02;
+        s->slice[5] ^= t3_02 ^ t7_02;
+        s->slice[6] ^= t4_02;
+        s->slice[7] ^= t5_02;
+    }
+}
+
+static void _savebytes(unsigned char* data16, const aesstate *s)
+{
+    int c;
+    for (c = 0; c < 4; c++)
+    {
+        int r;
+        for (r = 0; r < 4; r++)
+        {
+            int b;
+            uint8_t v = 0;
+            for (b = 0; b < 8; b++)
+            {
+                v |= ((s->slice[b] >> (r * 4 + c)) & 1) << b;
+            }
+            *(data16++) = v;
+        }
+    }
+}
+
+static void _invshiftrows(aesstate* s)
+{
+    int i;
+    for (i = 0; i < 8; i++)
+    {
+        uint16_t v = s->slice[i];
+        s->slice[i] =
+            (v & BIT_RANGE(0, 4)) |
+            BIT_RANGE_LEFT(v, 4, 7, 1) | BIT_RANGE_RIGHT(v, 7, 8, 3) |
+            BIT_RANGE_LEFT(v, 8, 10, 2) | BIT_RANGE_RIGHT(v, 10, 12, 2) |
+            BIT_RANGE_LEFT(v, 12, 13, 3) | BIT_RANGE_RIGHT(v, 13, 16, 1);
     }
 }
 
