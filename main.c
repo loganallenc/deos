@@ -28,7 +28,7 @@ int main(int argc, char const *argv[])
     {
         testdeosaes* test = &aestests[i];
 
-        deosaes *aes = newdeosaes(test->keysize);
+        deosaes *aes = newdeosaes(test->keysize, "key");
 
         printf("%d\n", aes->keysize);
 

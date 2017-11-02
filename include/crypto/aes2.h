@@ -23,9 +23,24 @@ typedef struct
 {   uint16_t slice[8];
 } aesstate;
 
-typedef struct deosaesctx
-{   int i;
+typedef struct
+{   aesstate rk[11];
+} aes128ctx;
+
+typedef struct
+{   aesstate rk[13];
+} aes192ctx;
+
+typedef struct
+{   aesstate rk[15];
+} aes256ctx;
+
+typedef struct
+{   aesstate *rounds;
     int keysize;
+    int nkeywords;
+    int nrounds;
+    uint8_t* key;
 } deosaes;
 
 typedef struct
@@ -35,8 +50,7 @@ typedef struct
     const char* cipher;
 } testdeosaes;
 
-extern deosaes *newdeosaes(int keysize);
-extern deosaes *initdeosaes(void);
+extern deosaes *newdeosaes(int keysize, const uint8_t* key);
 extern int deldeosaes(deosaes *self);
 
 #ifdef __cplusplus
