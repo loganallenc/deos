@@ -1,7 +1,7 @@
 export MAKEFLAGS=--no-print-directory
 
 .DEFAULT_GOAL:=all
-.PHONY:all run build clean test
+.PHONY:all run build clean
 
 CC:=clang
 CFLAGS:=-ggdb -O3 -Wall -Wcomment
