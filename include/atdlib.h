@@ -1,9 +1,9 @@
-#ifndef __ATDLIB__
-#define __ATDLIB__
+#ifndef __atdlib
+#define __atdlib
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /*cplusplus*/
 
 #include <assert.h>
 #include <stdio.h>
@@ -11,18 +11,16 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
-#include "crypto/aes.h"
+#include <deos/addr.h>
+#include <deos/ocl.h>
+#include <deos/tx.h>
+#include <deos/util.h>
 
-#include "bitcoin/addr.h"
-#include "bitcoin/script.h"
-
-#include "deosaddr.h"
-#include "deosocl.h"
-#include "deostx.h"
-#include "deosutil.h"
+#include <deos/bitcoin/addr.h>
+#include <deos/bitcoin/script.h>
+#include <deos/crypto/aes.h>
 
 #ifdef __cplusplus
 }
-#endif
-
-#endif
+#endif /*cplusplus*/
+#endif /*atdlib*/

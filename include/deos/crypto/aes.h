@@ -5,20 +5,20 @@
 * file COPYING or http://www.opensource.org/licenses/mit-license.php. *
 ***********************************************************************/
 
-#ifndef __DEOAES__
-#define __DEOAES__
+#ifndef __deoscryptoaes
+#define __deoscryptoaes
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /*cplusplus*/
 
-#ifndef __ATDLIB__
+#ifndef __atdlib
 #include <assert.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#endif /*ATDLIB*/
+#endif /*atdlib*/
 
 typedef struct
 {   uint16_t slice[8];
@@ -53,12 +53,19 @@ typedef struct
 
 extern deosaes *newdeosaes(int keysize, const uint8_t* key);
 extern int deldeosaes(deosaes *self);
-extern void deosaesencrypt(deosaes *self, size_t blocks, unsigned char *ciphertext, const unsigned char *plaintext);
-extern void deosaesdecrypt(deosaes *self, size_t blocks, unsigned char *plaintext, const unsigned char *ciphertext);
-extern void deosaesfromhex(unsigned char* data, int len, const char* hex);
+extern void deosaesencrypt(deosaes *self,
+                           size_t blocks,
+                           unsigned char *ciphertext,
+                           const unsigned char *plaintext);
+extern void deosaesdecrypt(deosaes *self,
+                           size_t blocks,
+                           unsigned char *plaintext,
+                           const unsigned char *ciphertext);
+extern void deosaesfromhex(unsigned char* data,
+                           int len,
+                           const char* hex);
 
 #ifdef __cplusplus
 }
-#endif
-
-#endif /*DEOAES*/
+#endif /*cplusplus*/
+#endif /*deoscryptoaes*/

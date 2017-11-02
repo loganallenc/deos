@@ -5,7 +5,7 @@
 * file COPYING or http://www.opensource.org/licenses/mit-license.php. *
 ***********************************************************************/
 
-#include "crypto/aes.h"
+#include <deos/crypto/aes.h>
 
 /* macros */
 #define BIT_RANGE(from,to) (((1 << ((to) - (from))) - 1) << (from))
@@ -15,7 +15,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /*cplusplus*/
 
 /* local declarations */
 static deosaes *_initdeosaes(int keysize, const uint8_t* key);
@@ -82,6 +82,7 @@ deosaes *newdeosaes(int keysize, const uint8_t* key)
 int deldeosaes(deosaes *self)
 {
     if (NULL == self) return -1;
+    /* handle ctx */
     free(self);
     return 0;
 }
@@ -526,4 +527,4 @@ static void _invshiftrows(aesstate* s)
 
 #ifdef __cplusplus
 }
-#endif
+#endif /*cplusplus*/
