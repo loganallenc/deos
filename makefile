@@ -10,6 +10,7 @@ HEADERS:=-I./include
 MAIN:=main.c
 OBJECTS:=\
 obj/crypto/aes.o\
+obj/crypto/aes2.o\
 obj/deosaddr.o\
 obj/deosocl.o\
 obj/deostx.o\

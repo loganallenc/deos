@@ -9,6 +9,7 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include "crypto/aes.h"
+#include "crypto/aes2.h"
 #include "bitcoin/addr.h"
 #include "bitcoin/script.h"
 #include "deosaddr.h"
