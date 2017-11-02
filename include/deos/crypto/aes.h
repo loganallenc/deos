@@ -68,4 +68,5 @@ extern void deosaesfromhex(unsigned char* data,
 #ifdef __cplusplus
 }
 #endif /*cplusplus*/
+
 #endif /*deoscryptoaes*/

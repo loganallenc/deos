@@ -24,4 +24,5 @@ typedef struct
 #ifdef __cplusplus
 }
 #endif /*cplusplus*/
+
 #endif /*deosaddr*/

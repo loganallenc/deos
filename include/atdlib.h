@@ -1,3 +1,9 @@
+/**********************************************************************
+* Copyright (c) 2017 Andrew DeSantis                                  *
+* Distributed under the MIT software license, see the accompanying    *
+* file COPYING or http://www.opensource.org/licenses/mit-license.php. *
+***********************************************************************/
+
 #ifndef __atdlib
 #define __atdlib
 
@@ -23,4 +29,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif /*cplusplus*/
+
 #endif /*atdlib*/
