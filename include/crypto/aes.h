@@ -5,48 +5,60 @@
 * file COPYING or http://www.opensource.org/licenses/mit-license.php. *
 ***********************************************************************/
 
-#ifndef __DEOSAES__
-#define __DEOSAES__
+#ifndef __DEOAES__
+#define __DEOAES__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #ifndef __ATDLIB__
+#include <assert.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #endif /*ATDLIB*/
 
 typedef struct
 {   uint16_t slice[8];
-} AES_state;
+} aesstate;
 
 typedef struct
-{   AES_state rk[11];
-} AES128_ctx;
+{   aesstate rk[11];
+} aes128ctx;
 
 typedef struct
-{   AES_state rk[13];
-} AES192_ctx;
+{   aesstate rk[13];
+} aes192ctx;
 
 typedef struct
-{   AES_state rk[15];
-} AES256_ctx;
+{   aesstate rk[15];
+} aes256ctx;
 
-extern void AES128_init(AES128_ctx* ctx, const unsigned char* key16);
-extern void AES192_init(AES192_ctx* ctx, const unsigned char* key24);
-extern void AES256_init(AES256_ctx* ctx, const unsigned char* key32);
+typedef struct
+{   aesstate *rounds;
+    int keysize;
+    int nkeywords;
+    int nrounds;
+    const uint8_t* key;
+} deosaes;
 
-extern void AES128_encrypt(const AES128_ctx* ctx, size_t blocks, unsigned char* cipher16, const unsigned char* plain16);
-extern void AES192_encrypt(const AES192_ctx* ctx, size_t blocks, unsigned char* cipher16, const unsigned char* plain16);
-extern void AES256_encrypt(const AES256_ctx* ctx, size_t blocks, unsigned char* cipher16, const unsigned char* plain16);
+typedef struct
+{   int keysize;
+    const char* key;
+    const char* plain;
+    const char* cipher;
+} testdeosaes;
 
-extern void AES128_decrypt(const AES128_ctx* ctx, size_t blocks, unsigned char* plain16, const unsigned char* cipher16);
-extern void AES192_decrypt(const AES192_ctx* ctx, size_t blocks, unsigned char* plain16, const unsigned char* cipher16);
-extern void AES256_decrypt(const AES256_ctx* ctx, size_t blocks, unsigned char* plain16, const unsigned char* cipher16);
+extern deosaes *newdeosaes(int keysize, const uint8_t* key);
+extern int deldeosaes(deosaes *self);
+extern void deosaesencrypt(deosaes *self, size_t blocks, unsigned char *ciphertext, const unsigned char *plaintext);
+extern void deosaesdecrypt(deosaes *self, size_t blocks, unsigned char *plaintext, const unsigned char *ciphertext);
+extern void deosaesfromhex(unsigned char* data, int len, const char* hex);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /*DEOSAES*/
+#endif /*DEOAES*/

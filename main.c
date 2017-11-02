@@ -1,7 +1,5 @@
 #include "atdlib.h"
 
-static void _fromhex(unsigned char* data, int len, const char* hex);
-
 testdeosaes aestests[15] = {
     /* AES test vectors from FIPS 197. */
     {128, "000102030405060708090a0b0c0d0e0f", "00112233445566778899aabbccddeeff", "69c4e0d86a7b0430d8cdb78070b4c55a"},
@@ -25,50 +23,39 @@ testdeosaes aestests[15] = {
 int main(int argc, char const *argv[])
 {
     int i;
+    int fail = 0;
     for (i = 0; i < sizeof(aestests) / sizeof(aestests[0]); i++)
     {
         unsigned char key[32];
         testdeosaes* test = &aestests[i];
 
         switch (test->keysize)
-        {   case 128: { _fromhex(key, 16, test->key); break; }
-            case 192: { _fromhex(key, 24, test->key); break; }
-            case 256: { _fromhex(key, 32, test->key); break; }
+        {   case 128: { deosaesfromhex(key, 16, test->key); break; }
+            case 192: { deosaesfromhex(key, 24, test->key); break; }
+            case 256: { deosaesfromhex(key, 32, test->key); break; }
         }
 
-        unsigned char ciphertext[16]; _fromhex(ciphertext, 16, test->cipher);
-        unsigned char  plaintext[16]; _fromhex(plaintext,  16, test->plain);
+        unsigned char ciphertext[16]; deosaesfromhex(ciphertext, 16, test->cipher);
+        unsigned char  plaintext[16]; deosaesfromhex(plaintext, 16, test->plain);
         unsigned char  ciphered[16], deciphered[16];
 
         deosaes *aes = newdeosaes(test->keysize, key);
         deosaesencrypt(aes, 1, ciphered,   plaintext);
         deosaesdecrypt(aes, 1, deciphered, ciphertext);
-        if (aes->keysize == 128)
-        {
-            if (memcmp(plaintext, deciphered, 16))
-            {
-                fprintf(stderr, "D(key=\"%s\", cipher=\"%s\") != \"%s\"\n", test->key, test->cipher, test->plain);
-            }
+        if (memcmp(ciphertext, ciphered, 16)) {
+            fprintf(stderr, "E(key=\"%s\", plain=\"%s\") != \"%s\"\n", test->key, test->plain, test->cipher);
+            fail++;
+        }
+        if (memcmp(plaintext, deciphered, 16)) {
+            fprintf(stderr, "D(key=\"%s\", cipher=\"%s\") != \"%s\"\n", test->key, test->cipher, test->plain);
+            fail++;
         }
         deldeosaes(aes);
     }
-
-    return EXIT_SUCCESS;
-}
-
-static void _fromhex(unsigned char* data, int len, const char* hex)
-{
-    int p;
-    for (p = 0; p < len; p++)
-    {   int v = 0;
-        int n;
-        for (n = 0; n < 2; n++)
-        {   assert((*hex >= '0' && *hex <= '9') || (*hex >= 'a' && *hex <= 'f'));
-            if (*hex >= '0' && *hex <= '9') v |= (*hex - '0') << (4 * (1 - n));
-            else v |= (*hex - 'a' + 10) << (4 * (1 - n));
-            hex++;
-        }
-        *(data++) = v;
+    if (fail == 0) {
+        fprintf(stderr, "All tests succesful\n");
+    } else {
+        fprintf(stderr, "%i tests failed\n", fail);
     }
-    assert(*hex == 0);
+    return EXIT_SUCCESS;
 }
