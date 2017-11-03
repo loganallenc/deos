@@ -1,5 +1,6 @@
 *.o
 *.pem
 *.pyc
-
 .DS_Store
+.fseventsd/*
+!.fseventsd/no_log
