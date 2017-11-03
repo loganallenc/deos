@@ -1,0 +1,3 @@
+main.py filter=git-crypt diff=git-crypt
+makefile filter=git-crypt diff=git-crypt
+.gitattributes !filter !diff
