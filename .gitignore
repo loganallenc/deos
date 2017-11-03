@@ -1,9 +1,5 @@
-#[filetypes]
 *.o
 *.pem
 *.pyc
-#[dotfiles]
+
 .DS_Store
-#[files]
-sftp-config.json
-#[endfi]
