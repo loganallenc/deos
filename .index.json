@@ -1,5 +1,6 @@
 {
   "files": [
+    ".Trashes",
     ".bowerrc",
     ".deosenv",
     ".deosrc",
@@ -8,11 +9,12 @@
     ".gitignore",
     ".index.json",
     ".metadata_never_index",
-    ".Trashes",
-    "bower.json",
-    "sftp-config.json",
     "COPYING",
     "Makefile",
-    "README.md"
+    "README.md",
+    "bower.json",
+    "sftp-config.json",
+    "src/deos/tx.c",
+    "src/main.c"
   ]
 }

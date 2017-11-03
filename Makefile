@@ -22,6 +22,9 @@ obj/deos/bitcoin/%.o:
 obj/deos/crypto/%.o:
 	$(CC) $(STD) $(CFLAGS) $(LIBS) $(HEADERS) -c ./src/deos/crypto/$*.c -o ./obj/deos/crypto/$*.o
 
+deos.atd:
+	cd home/atd && $(MAKE)
+
 deos.bower:
 	bower update
 
