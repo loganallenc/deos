@@ -1,4 +1,5 @@
 * text=auto
 .deosenv filter=git-crypt diff=git-crypt
+bower.json filter=git-crypt diff=git-crypt
 sftp-config.json filter=git-crypt diff=git-crypt
 .gitattributes !filter !diff
