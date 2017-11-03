@@ -70,6 +70,7 @@
     "bin/.gitignore",
     "bin/compiler.jar",
     "bin/js.jar",
+    "bin/r.js",
     "bower.json",
     "sftp-config.json",
     "src/deos/tx.c",

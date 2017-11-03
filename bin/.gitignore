@@ -2,3 +2,4 @@
 !.gitignore
 !compiler.jar
 !js.jar
+!r.js
