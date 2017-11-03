@@ -5,7 +5,6 @@
 #[folders]
 crt/
 ext/
-venv/
 #[dotfiles]
 .DS_Store
 #[files]
