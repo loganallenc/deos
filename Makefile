@@ -34,3 +34,8 @@ deos.scripts: deos.scripts.clean
 
 deos.scripts.clean:
 	@-rm bin/js.jar bin/compiler.jar
+
+deos.venv:
+	-rm -rf venv
+	virtualenv -p /usr/bin/python2.7 --always-copy --no-site-packages venv
+	bash -c "source venv/bin/activate && pip install -r etc/python/requirements.txt"
