@@ -24,6 +24,7 @@ extern "C" {
 
 #include <deos/bitcoin/addr.h>
 #include <deos/bitcoin/script.h>
+
 #include <deos/crypto/aes.h>
 
 #ifdef __cplusplus

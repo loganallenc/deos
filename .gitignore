@@ -2,9 +2,6 @@
 *.o
 *.pem
 *.pyc
-#[folders]
-crt/
-ext/
 #[dotfiles]
 .DS_Store
 #[files]
