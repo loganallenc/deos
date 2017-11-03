@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".bowerrc",
+    ".deosenv",
+    ".deosrc",
+    ".editorconfig",
+    ".gitattributes",
+    ".gitignore",
+    ".index.json",
+    ".metadata_never_index",
+    ".Trashes",
+    "bower.json",
+    "sftp-config.json",
+    "COPYING",
+    "Makefile",
+    "README.md"
+  ]
+}
