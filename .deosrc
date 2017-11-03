@@ -1,0 +1,23 @@
+export MAKEFLAGS=--no-print-directory
+
+.DEFAULT_GOAL:=all
+.PHONY:all run build clean deos.bower deos.scripts deos.scripts.clean
+
+CC:=clang
+CFLAGS:=-ggdb -O3 -Wall -Wcomment
+CLIBS=-lpcre -lcrypto -lm -lpthread
+HEADERS:=-I./include
+MAIN:=src/main.c
+OBJECTS:=\
+obj/deos/crypto/aes.o\
+obj/deos/addr.o\
+obj/deos/ocl.o\
+obj/deos/tx.o\
+obj/deos/util.o
+STD:=-std=c89
+RM:=rm -rf
+TARGET:=./bin/deos
+XMOD:=chmod +x
+
+CLOSUREURL:=https://github.com/requirejs/r.js/blob/master/lib/closure/compiler.jar?raw=true
+RHINOURL:=https://github.com/requirejs/r.js/blob/master/lib/rhino/js.jar?raw=true
